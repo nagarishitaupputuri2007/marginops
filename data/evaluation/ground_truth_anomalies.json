@@ -1,0 +1,171 @@
+{
+  "dataset_name": "MarginOps 120-Day Multi-Cloud Synthetic Billing Benchmark",
+  "version": "1.0.0",
+  "generated_at": "2026-11-15T12:37:32.125011+00:00",
+  "seed": 42,
+  "days_covered": 120,
+  "start_date": "2026-07-18",
+  "end_date": "2026-11-14",
+  "total_records": 1803,
+  "total_gross_cost": "17295.41",
+  "total_credits": "-4200.00",
+  "total_net_cost": "13095.41",
+  "currency": "USD",
+  "providers": [
+    "AWS",
+    "Azure",
+    "GCP"
+  ],
+  "services": [
+    "AWS Account Billing",
+    "Amazon Bedrock",
+    "Amazon CloudWatch",
+    "Amazon Elastic Compute Cloud",
+    "Amazon Relational Database Service",
+    "Amazon Simple Storage Service",
+    "Azure Cosmos DB",
+    "Azure OpenAI Service",
+    "Google BigQuery",
+    "Google Cloud Storage",
+    "Google Compute Engine",
+    "Microsoft Azure Billing"
+  ],
+  "workloads": [
+    "workload-api-gateway",
+    "workload-data-pipeline",
+    "workload-database-cluster",
+    "workload-finance",
+    "workload-model-inference",
+    "workload-monitoring",
+    "workload-storage-lake"
+  ],
+  "features": [
+    "feat-ai-copilot",
+    "feat-anomaly-detector",
+    "feat-cost-intelligence",
+    "feat-infra-optimizer",
+    "feat-unit-metrics"
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "SCENARIO-COMPUTE-SPIKE-001",
+      "scenario_type": "compute_spike",
+      "title": "Runaway ETL Worker Cluster Auto-scaling Spike",
+      "description": "A poison-pill message loop in the ingestion queue triggered runaway horizontal scaling of 14-18 c6i.8xlarge EC2 worker nodes for 5 days until manual intervention.",
+      "cloud_provider": "AWS",
+      "target_service": "AmazonEC2",
+      "target_resource_id": "i-worker-pipeline-runaway",
+      "target_workload_id": "workload-data-pipeline",
+      "target_product_feature_id": "feat-anomaly-detector",
+      "start_date": "2026-08-28",
+      "end_date": "2026-09-01",
+      "expected_cost_impact": "2676.48",
+      "currency": "USD",
+      "detection_criteria": {
+        "metric": "daily_cost",
+        "z_score_threshold": 3.5,
+        "percentage_increase": 800
+      },
+      "metadata": {
+        "affected_nodes_peak": 18,
+        "instance_type": "c6i.8xlarge"
+      }
+    },
+    {
+      "scenario_id": "SCENARIO-STORAGE-LEAK-002",
+      "scenario_type": "storage_leak",
+      "title": "Accumulating Raw Telemetry S3 Bucket Without Lifecycle Expiration",
+      "description": "Uncompressed raw JSON telemetry logs accumulated continuously without lifecycle rules transitioning objects to Glacier or expiring them, scaling storage from 100 GB to over 6,000 GB.",
+      "cloud_provider": "AWS",
+      "target_service": "AmazonS3",
+      "target_resource_id": "arn:aws:s3:::marginops-prod-raw-telemetry",
+      "target_workload_id": "workload-storage-lake",
+      "target_product_feature_id": "feat-cost-intelligence",
+      "start_date": "2026-08-06",
+      "end_date": "2026-11-14",
+      "expected_cost_impact": "234.53",
+      "currency": "USD",
+      "detection_criteria": {
+        "metric": "daily_storage_growth",
+        "trend": "monotonically_increasing",
+        "days_continuous": 30
+      },
+      "metadata": {
+        "initial_gb": 100,
+        "final_gb": 5890.0
+      }
+    },
+    {
+      "scenario_id": "SCENARIO-AI-SURGE-003",
+      "scenario_type": "ai_token_surge",
+      "title": "Generative AI Copilot Recursive Reflection Loop Surge",
+      "description": "Deployment of multi-agent reflective reasoning caused unbounded token consumption loops, creating an 18x surge in daily output tokens for a 14-day period.",
+      "cloud_provider": "AWS",
+      "target_service": "AmazonBedrock",
+      "target_resource_id": "anthropic.claude-3-5-sonnet-surge",
+      "target_workload_id": "workload-model-inference",
+      "target_product_feature_id": "feat-ai-copilot",
+      "start_date": "2026-09-30",
+      "end_date": "2026-10-13",
+      "expected_cost_impact": "2953.05",
+      "currency": "USD",
+      "detection_criteria": {
+        "metric": "token_output_volume",
+        "multiplier": 15.0,
+        "affected_service": "AmazonBedrock"
+      },
+      "metadata": {
+        "average_surge_ktokens": 14000
+      }
+    },
+    {
+      "scenario_id": "SCENARIO-IDLE-ZOMBIE-004",
+      "scenario_type": "underutilized_resource",
+      "title": "Orphaned Staging RDS Read Replica Running Continuously",
+      "description": "An unutilized staging read replica provisioned for testing remained running 24/7 across the entire 120-day timeframe with zero active connections, generating continuous idle waste.",
+      "cloud_provider": "AWS",
+      "target_service": "AmazonRDS",
+      "target_resource_id": "db-marginops-staging-replica-orphaned",
+      "target_workload_id": "workload-database-cluster",
+      "target_product_feature_id": "feat-infra-optimizer",
+      "start_date": "2026-07-18",
+      "end_date": "2026-11-14",
+      "expected_cost_impact": "1497.60",
+      "currency": "USD",
+      "detection_criteria": {
+        "metric": "cpu_utilization_avg",
+        "threshold_pct": 1.0,
+        "active_connections": 0,
+        "status": "idle"
+      },
+      "metadata": {
+        "idle_days": 120,
+        "daily_waste": 12.48
+      }
+    },
+    {
+      "scenario_id": "SCENARIO-CREDITS-REFUNDS-005",
+      "scenario_type": "credit_refund",
+      "title": "Cloud Provider Enterprise Credits and SLA Outage Refunds",
+      "description": "Valid financial adjustments on the billing ledger: $2,500 AWS startup grant (Day 25), $450 AWS SLA downtime refund (Day 65), and $1,250 Azure Enterprise rebate (Day 105).",
+      "cloud_provider": "Multi-Cloud",
+      "target_service": "CloudBilling",
+      "target_resource_id": "credit-aws-startup-grant,refund-aws-sla-credit-outage,rebate-azure-ea-commitment",
+      "target_workload_id": "workload-finance",
+      "target_product_feature_id": "feat-cost-intelligence",
+      "start_date": "2026-08-11",
+      "end_date": "2026-10-30",
+      "expected_cost_impact": "-4200.00",
+      "currency": "USD",
+      "detection_criteria": {
+        "field": "billing_amount",
+        "condition": "negative",
+        "expected_total": -4200.0
+      },
+      "metadata": {
+        "credit_count": 3,
+        "total_refund_amount": -4200.0
+      }
+    }
+  ]
+}
