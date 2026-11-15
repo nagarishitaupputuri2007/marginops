@@ -218,3 +218,23 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- MarginOps Additions ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environments
+.env*
+!.env.example
+frontend/.env*
+!frontend/.env.example
+
+# Virtual Environments
+backend/.venv/
+
