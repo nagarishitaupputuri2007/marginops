@@ -188,20 +188,20 @@ export const AnomaliesPage: React.FC = () => {
             <span className="text-emerald-400">Risk: Low (Under Budget)</span>
           </div>
 
-          <div className="flex-1 flex items-end gap-1.5 pt-4">
+          <div className="h-32 flex items-end gap-1.5 pt-4">
             {forecast?.forecast_points.map((pt, idx) => {
-              const maxScale = 150;
+              const maxScale = 120;
               const pointHeight = Math.min(100, Math.max(10, (Number(pt.predicted_amount) / maxScale) * 100));
               const upper95Height = Math.min(100, (Number(pt.upper_bound_95) / maxScale) * 100);
 
               return (
                 <div
                   key={idx}
-                  className="flex-1 flex flex-col items-center group relative cursor-pointer min-w-[8px]"
+                  className="flex-1 h-full flex flex-col justify-end items-center group relative cursor-pointer min-w-[8px]"
                 >
                   {/* Confidence Interval Upper Shading */}
                   <div
-                    className="w-full bg-cyan-500/20 rounded-t"
+                    className="w-full bg-cyan-500/20 rounded-t flex flex-col justify-end"
                     style={{ height: `${upper95Height}%` }}
                   >
                     {/* Point Forecast Bar */}

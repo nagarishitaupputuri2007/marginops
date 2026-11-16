@@ -167,14 +167,14 @@ export const CostExplorerPage: React.FC = () => {
               </span>
             </div>
           </div>
-          <div className="h-24 flex items-end gap-1.5 pt-4 overflow-x-auto">
+          <div className="h-28 flex items-end gap-1.5 pt-4 overflow-x-auto">
             {explorer.daily_time_series.slice(-40).map((pt) => {
-              const maxDaily = 150;
-              const heightPercent = Math.min(100, Math.max(5, (pt.total / maxDaily) * 100));
+              const maxDaily = 120;
+              const heightPercent = Math.min(100, Math.max(8, (Math.max(0, pt.total) / maxDaily) * 100));
               return (
                 <div
                   key={pt.date}
-                  className="flex-1 flex flex-col items-center group relative cursor-pointer min-w-[12px]"
+                  className="flex-1 h-full flex flex-col justify-end items-center group relative cursor-pointer min-w-[14px]"
                 >
                   <div
                     className="w-full bg-emerald-500/80 rounded-t group-hover:bg-emerald-400 transition"
