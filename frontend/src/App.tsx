@@ -1,8 +1,12 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootLayout } from '@/layouts/RootLayout';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { CostExplorerPage } from '@/pages/CostExplorerPage';
+import { UnitEconomicsPage } from '@/pages/UnitEconomicsPage';
+import { AnomaliesPage } from '@/pages/AnomaliesPage';
+import { InvestigatorPage } from '@/pages/InvestigatorPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,16 +24,11 @@ export const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<RootLayout />}>
             <Route index element={<DashboardPage />} />
-            {/* Future domain feature routes will mount under RootLayout */}
-            <Route
-              path="*"
-              element={
-                <div className="p-8 text-center text-slate-400">
-                  <h2 className="text-xl font-bold text-white mb-2">Module Pending</h2>
-                  <p>This module will be implemented in subsequent development phases.</p>
-                </div>
-              }
-            />
+            <Route path="explorer" element={<CostExplorerPage />} />
+            <Route path="unit-economics" element={<UnitEconomicsPage />} />
+            <Route path="anomalies" element={<AnomaliesPage />} />
+            <Route path="investigator" element={<InvestigatorPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </BrowserRouter>
