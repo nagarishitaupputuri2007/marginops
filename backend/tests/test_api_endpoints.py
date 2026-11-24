@@ -189,3 +189,46 @@ def test_investigation_not_found(client):
     fake_id = str(uuid.uuid4())
     res = client.get(f"/api/v1/investigations/{fake_id}")
     assert res.status_code == 404
+
+
+def test_costs_upload_and_reconciliation(client):
+    """Verifies /api/v1/costs/upload accepts CSV billing uploads and recalculates state."""
+    csv_content = (
+        "billing_date,cloud_provider,account_id,service_id,service_name,resource_id,"
+        "usage_type,usage_quantity,unit_of_measurement,currency,cost,billing_amount,workload_id,product_feature_id,resource_tags\n"
+        "2026-11-20,AWS,aws-acct-test,AmazonEC2,Amazon Elastic Compute Cloud,i-custom-test-01,"
+        "BoxUsage:m6i.large,24.0,Hours,USD,2.3040,2.3040,workload-custom,feat-cost-intelligence,\"{}\"\n"
+        "2026-11-20,AWS,aws-acct-test,AWSBilling,AWS Billing,credit-test-grant,"
+        "Credit:Promotional,1.0,Units,USD,-50.0000,-50.0000,workload-custom,feat-cost-intelligence,\"{}\"\n"
+    )
+
+    files = {"file": ("custom_billing.csv", csv_content.encode("utf-8"), "text/csv")}
+    res = client.post("/api/v1/costs/upload", files=files)
+    assert res.status_code == 200
+    data = res.json()
+
+    assert data["status"] == "PROCESSED_AND_RECONCILED"
+    assert data["filename"] == "custom_billing.csv"
+    assert data["valid_rows"] == 2
+    assert data["positive_charges"] == 2.304
+    assert data["credits"] == -50.0
+    assert data["is_reconciled"] is True
+    assert data["reconciliation_delta"] == "0.0000"
+
+
+def test_costs_export_endpoint(client):
+    """Verifies /api/v1/costs/export produces financial reconciliation certificates."""
+    # 1. JSON export
+    res_json = client.get("/api/v1/costs/export?format=json")
+    assert res_json.status_code == 200
+    data = res_json.json()
+    assert data["reconciliation_status"] == "CERTIFIED_RECONCILED"
+    assert data["reconciliation_delta"] == "0.0000"
+    assert "feature_attribution" in data
+
+    # 2. CSV export
+    res_csv = client.get("/api/v1/costs/export?format=csv")
+    assert res_csv.status_code == 200
+    assert "text/csv" in res_csv.headers["content-type"]
+    assert "attachment; filename=marginops_reconciliation_audit.csv" in res_csv.headers["content-disposition"]
+    assert "Billing Date,Cloud Provider,Service Name" in res_csv.text

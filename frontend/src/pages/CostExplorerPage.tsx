@@ -1,18 +1,35 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { fetchCostAttribution, fetchCostExplorer } from '@/services/api';
+import React, { useState, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  fetchCostAttribution,
+  fetchCostExplorer,
+  uploadBillingFile,
+  downloadAuditExport,
+} from '@/services/api';
 import {
   ShieldCheck,
   Filter,
   Search,
   ChevronLeft,
   ChevronRight,
+  UploadCloud,
+  Download,
+  CheckCircle2,
+  X,
+  FileText,
+  AlertCircle,
 } from 'lucide-react';
 
 export const CostExplorerPage: React.FC = () => {
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const pageSize = 20;
 
   // Fetch attribution audit summary
@@ -32,6 +49,34 @@ export const CostExplorerPage: React.FC = () => {
         limit: pageSize,
       }),
   });
+
+  // Mutation for uploading custom billing files
+  const uploadMutation = useMutation({
+    mutationFn: (file: File) => uploadBillingFile(file),
+    onSuccess: (data) => {
+      setUploadResult(data);
+      queryClient.invalidateQueries({ queryKey: ['cost-attribution'] });
+      queryClient.invalidateQueries({ queryKey: ['cost-explorer'] });
+      queryClient.invalidateQueries({ queryKey: ['kpi-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['anomalies-active'] });
+    },
+  });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      uploadMutation.mutate(file);
+    }
+  };
+
+  const handleExport = async (format: 'json' | 'csv') => {
+    try {
+      setIsExporting(true);
+      await downloadAuditExport(format);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const providers = ['', 'AWS', 'GCP', 'Azure'];
 
@@ -53,17 +98,129 @@ export const CostExplorerPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Audit Callout Badge */}
-        <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-3 flex items-center gap-3">
-          <ShieldCheck className="h-6 w-6 text-emerald-400 shrink-0" />
-          <div className="text-xs">
-            <div className="font-semibold text-emerald-300">Strict Conservation of Money</div>
-            <div className="text-slate-400 font-mono">
-              Delta Δ = <span className="text-white font-bold">$0.0000</span> (100% Reconciled)
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => {
+              setUploadResult(null);
+              setShowUploadModal(true);
+            }}
+            className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-emerald-500 text-xs font-semibold text-slate-200 hover:text-white flex items-center gap-2 transition"
+          >
+            <UploadCloud className="h-4 w-4 text-emerald-400" />
+            Ingest Billing CSV
+          </button>
+
+          <button
+            onClick={() => handleExport('csv')}
+            disabled={isExporting}
+            className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:border-cyan-500 text-xs font-semibold text-slate-200 hover:text-white flex items-center gap-2 transition disabled:opacity-50"
+          >
+            <Download className="h-4 w-4 text-cyan-400" />
+            Export Audit CSV
+          </button>
+
+          {/* Audit Callout Badge */}
+          <div className="bg-slate-900 border border-emerald-500/30 rounded-xl p-3 flex items-center gap-3">
+            <ShieldCheck className="h-6 w-6 text-emerald-400 shrink-0" />
+            <div className="text-xs">
+              <div className="font-semibold text-emerald-300">Strict Conservation of Money</div>
+              <div className="text-slate-400 font-mono">
+                Delta Δ = <span className="text-white font-bold">$0.0000</span> (100% Reconciled)
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Upload Modal Drawer */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <UploadCloud className="h-5 w-5 text-emerald-400" />
+                <h3 className="text-base font-bold text-white">Ingest Multi-Cloud Billing Dataset</h3>
+              </div>
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400">
+              Upload normalized AWS CUR, GCP Billing, or Azure CSV exports. The engine parses line items,
+              verifies SHA-256 idempotency, runs Hare-Niemeyer attribution, and flags anomalies.
+            </p>
+
+            {/* Dropzone */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-slate-700 hover:border-emerald-500/80 rounded-xl p-8 text-center cursor-pointer bg-slate-950/50 hover:bg-slate-950 transition space-y-3"
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <FileText className="h-8 w-8 text-slate-500 mx-auto" />
+              <div>
+                <span className="text-xs font-semibold text-emerald-400 block">
+                  Click to select a CSV billing file
+                </span>
+                <span className="text-[11px] text-slate-500 mt-1 block">
+                  Supports AWS CUR, GCP Export, Azure Cost Management CSV
+                </span>
+              </div>
+            </div>
+
+            {/* Status / Results */}
+            {uploadMutation.isPending && (
+              <div className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-400 flex items-center gap-2 animate-pulse">
+                <span>Ingesting line items and executing Largest Remainder attribution...</span>
+              </div>
+            )}
+
+            {uploadMutation.isError && (
+              <div className="p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>Upload failed: {(uploadMutation.error as Error)?.message || 'Invalid format'}</span>
+              </div>
+            )}
+
+            {uploadResult && (
+              <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-xs space-y-2">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Dataset Ingested & 100% Reconciled!
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono text-slate-300 pt-1">
+                  <div>Valid Rows: <span className="text-white font-bold">{uploadResult.valid_rows}</span></div>
+                  <div>Anomalies: <span className="text-amber-400 font-bold">{uploadResult.anomalies_detected}</span></div>
+                  <div>Positive: <span className="text-emerald-400">${uploadResult.positive_charges.toFixed(2)}</span></div>
+                  <div>Credits: <span className="text-cyan-400">${uploadResult.credits.toFixed(2)}</span></div>
+                </div>
+                <div className="text-[10px] font-mono text-slate-500 pt-1 truncate">
+                  SHA-256: {uploadResult.sha256_checksum}
+                </div>
+              </div>
+            )}
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Attribution Breakdown Cards */}
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 space-y-6">

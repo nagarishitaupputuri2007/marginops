@@ -13,6 +13,7 @@ import {
   Lock,
   Clock,
   Fingerprint,
+  Terminal,
 } from 'lucide-react';
 
 export const InvestigatorPage: React.FC = () => {
@@ -408,6 +409,60 @@ export const InvestigatorPage: React.FC = () => {
                       <span className="text-emerald-300 break-all select-all font-semibold">
                         {activeReport.approval_card.audit_hash}
                       </span>
+                    </div>
+
+                    {/* Infrastructure-as-Code Runbook */}
+                    <div className="pt-3 border-t border-emerald-900/40 space-y-2">
+                      <div className="flex items-center justify-between text-slate-300 font-semibold">
+                        <span className="flex items-center gap-1.5 text-xs">
+                          <Terminal className="h-3.5 w-3.5 text-emerald-400" />
+                          Certified Remediation Runbook & IaC Patch:
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-mono">Ready to Apply</span>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300 overflow-x-auto leading-relaxed">
+                        {activeReport.anomaly_type === 'compute_spike' ? (
+                          <div>
+                            <div className="text-slate-500"># 1. Update AWS Auto-Scaling Group ceiling</div>
+                            <div className="text-emerald-400">aws autoscaling update-auto-scaling-group \</div>
+                            <div className="pl-4 text-slate-300">--auto-scaling-group-name data-pipeline-worker-asg \</div>
+                            <div className="pl-4 text-slate-300">--max-size 8 --desired-capacity 3 --region us-east-1</div>
+                            <div className="text-slate-500 mt-2"># 2. Terminate runaway worker instance gracefully</div>
+                            <div className="text-emerald-400">aws autoscaling terminate-instance-in-auto-scaling-group \</div>
+                            <div className="pl-4 text-slate-300">--instance-id i-worker-pipeline-runaway \</div>
+                            <div className="pl-4 text-slate-300">--should-decrement-desired-capacity</div>
+                          </div>
+                        ) : activeReport.anomaly_type === 'storage_leak' ? (
+                          <div>
+                            <div className="text-slate-500"># Terraform: Apply 30-day lifecycle expiration rule</div>
+                            <div className="text-cyan-400">resource "aws_s3_bucket_lifecycle_configuration" "telemetry_exp" &#123;</div>
+                            <div className="pl-4 text-slate-300">bucket = "marginops-prod-raw-telemetry"</div>
+                            <div className="pl-4 text-slate-300">rule &#123;</div>
+                            <div className="pl-8 text-slate-300">id = "auto-expire-raw-after-30-days"</div>
+                            <div className="pl-8 text-slate-300">status = "Enabled"</div>
+                            <div className="pl-8 text-slate-300">expiration &#123; days = 30 &#125;</div>
+                            <div className="pl-4 text-slate-300">&#125;</div>
+                            <div className="text-cyan-400">&#125;</div>
+                          </div>
+                        ) : activeReport.anomaly_type === 'ai_token_surge' ? (
+                          <div>
+                            <div className="text-slate-500"># AI Agent Gateway: Apply recursion depth cap & prompt caching</div>
+                            <div className="text-violet-400">PATCH /api/v1/agent-gateway/policy</div>
+                            <div className="text-slate-300">&#123;</div>
+                            <div className="pl-4 text-slate-300">"max_reasoning_steps": 4,</div>
+                            <div className="pl-4 text-slate-300">"prompt_caching_enabled": true,</div>
+                            <div className="pl-4 text-slate-300">"fallback_model": "anthropic.claude-3-5-haiku"</div>
+                            <div className="text-slate-300">&#125;</div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="text-slate-500"># Terminate orphaned idle staging database</div>
+                            <div className="text-rose-400">aws rds delete-db-instance \</div>
+                            <div className="pl-4 text-slate-300">--db-instance-identifier db-marginops-staging-replica-orphaned \</div>
+                            <div className="pl-4 text-slate-300">--skip-final-snapshot</div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ) : (

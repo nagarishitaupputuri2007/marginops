@@ -48,6 +48,41 @@ export async function fetchCostAttribution(): Promise<CostAttributionSummary> {
   return response.data;
 }
 
+export async function uploadBillingFile(file: File): Promise<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await apiClient.post('/costs/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+}
+
+export async function downloadAuditExport(format: 'json' | 'csv' = 'csv'): Promise<void> {
+  const response = await apiClient.get('/costs/export', {
+    params: { format },
+    responseType: format === 'csv' ? 'blob' : 'json',
+  });
+
+  if (format === 'csv') {
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'marginops_reconciliation_audit.csv');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } else {
+    const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'marginops_reconciliation_audit.json');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+}
+
 // Unit Economics & Telemetry Fusion
 export async function fetchUnitEconomics(): Promise<UnitEconomicsReport> {
   const response = await apiClient.get<UnitEconomicsReport>('/unit-economics/report');

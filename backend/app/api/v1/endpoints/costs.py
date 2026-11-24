@@ -1,7 +1,7 @@
 """Cost intelligence and infrastructure spend endpoints."""
 import math
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, File, HTTPException, Query, Response, UploadFile, status
 from app.services.platform_state import PlatformStateService
 
 router = APIRouter(prefix="/costs", tags=["Cost Intelligence"])
@@ -67,3 +67,53 @@ async def get_cost_attribution() -> Dict[str, Any]:
     """
     state = PlatformStateService.get_instance()
     return state.get_attribution_summary()
+
+
+@router.post("/upload", response_model=Dict[str, Any])
+async def upload_billing_dataset(
+    file: UploadFile = File(..., description="Multi-cloud billing CSV export (AWS, GCP, Azure, or Normalized)"),
+) -> Dict[str, Any]:
+    """Uploads and ingests a custom cloud billing CSV dataset in real time.
+    
+    Validates line items, executes idempotency checking, runs deterministic attribution,
+    and updates anomaly scans dynamically.
+    """
+    if not file.filename or not file.filename.endswith(".csv"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file must be a valid .csv file",
+        )
+
+    try:
+        content_bytes = await file.read()
+        content_str = content_bytes.decode("utf-8")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to read file content: {str(e)}",
+        )
+
+    state = PlatformStateService.get_instance()
+    result = state.ingest_custom_billing_file(content_str, filename=file.filename)
+    return result
+
+
+@router.get("/export")
+async def export_cost_audit_report(
+    format: str = Query(default="json", description="Export format ('json' or 'csv')"),
+):
+    """Exports an auditable FinOps reconciliation certificate in CSV or JSON format.
+    
+    Certifies 100% conservation of money down to exact sub-cent precision.
+    """
+    state = PlatformStateService.get_instance()
+    if format.lower() == "csv":
+        csv_data = state.export_financial_audit(export_format="csv")
+        return Response(
+            content=csv_data,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": "attachment; filename=marginops_reconciliation_audit.csv",
+            },
+        )
+    return state.export_financial_audit(export_format="json")
