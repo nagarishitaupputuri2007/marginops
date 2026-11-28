@@ -22,27 +22,27 @@ export const UnitEconomicsPage: React.FC = () => {
     switch (status) {
       case 'HEALTHY':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             <CheckCircle2 className="h-3 w-3" /> Healthy
           </span>
         );
       case 'WARNING':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <AlertTriangle className="h-3 w-3" /> Warning
           </span>
         );
       case 'CRITICAL':
       case 'NEGATIVE':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
             <XCircle className="h-3 w-3" /> Critical
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
-            <HelpCircle className="h-3 w-3" /> Internal Tool
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700/60">
+            <HelpCircle className="h-3 w-3" /> Platform Overhead
           </span>
         );
     }
@@ -50,102 +50,102 @@ export const UnitEconomicsPage: React.FC = () => {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      {/* Executive Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-xl font-semibold text-zinc-100 tracking-tight">
               Product Unit Economics & Telemetry Fusion
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/20">
-              Slide 05 Engine
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60">
+              Telemetry Fusion Engine
             </span>
           </div>
-          <p className="text-slate-400 text-sm mt-1">
-            Fuses relational ledger expenditures with PyMongo operational telemetry to track $/kReq, $/MTok, and gross margin targets.
+          <p className="text-zinc-400 text-xs mt-1">
+            Fuses relational ledger expenditures with high-throughput operational telemetry to evaluate $/kReq, $/MTok, and gross margin compliance.
           </p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex items-center gap-4 text-xs">
+        <div className="bg-[#12141e] border border-zinc-800 rounded-lg px-4 py-2 flex items-center gap-4 text-xs">
           <div>
-            <div className="text-slate-500">Blended Gross Margin</div>
-            <div className="text-xl font-bold text-white mt-0.5">
+            <div className="text-zinc-400">Blended Gross Margin</div>
+            <div className="text-lg font-semibold tracking-tight text-zinc-100 mt-0.5">
               {isLoading ? '...' : `${Number(unitEcon?.overall_gross_margin_percent || 0).toFixed(1)}%`}
             </div>
           </div>
-          <div className="border-l border-slate-800 pl-4">
-            <div className="text-slate-500">Target Benchmark</div>
-            <div className="text-sm font-semibold text-emerald-400 mt-1">75.0% Target</div>
+          <div className="border-l border-zinc-800 pl-4">
+            <div className="text-zinc-400">Target Benchmark</div>
+            <div className="text-xs font-medium text-emerald-400 mt-1">70.0% Target</div>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards: Telemetry Volume & Attributed COGS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-        <div className="p-5 rounded-xl border border-slate-800 bg-slate-900/40">
-          <span className="text-xs font-medium text-slate-400">Total Attributed COGS</span>
-          <div className="mt-2 text-2xl font-extrabold text-white">
+      {/* Primary Volume & Cost Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
+          <span className="text-xs font-medium text-zinc-400">Total Attributed COGS</span>
+          <div className="mt-2 text-2xl font-semibold tracking-tight text-zinc-100">
             ${Number(unitEcon?.total_attributed_cost || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Infrastructure hosting & inference</p>
+          <p className="text-[11px] text-zinc-400 mt-1">Hosting, compute & model inference</p>
         </div>
 
-        <div className="p-5 rounded-xl border border-slate-800 bg-slate-900/40">
-          <span className="text-xs font-medium text-slate-400">Total Monitored Revenue</span>
-          <div className="mt-2 text-2xl font-extrabold text-emerald-400">
+        <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
+          <span className="text-xs font-medium text-zinc-400">Monitored SaaS Revenue</span>
+          <div className="mt-2 text-2xl font-semibold tracking-tight text-emerald-400">
             ${Number(unitEcon?.total_revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Customer subscription & usage tiers</p>
+          <p className="text-[11px] text-zinc-400 mt-1">Recognized customer contract billings</p>
         </div>
 
-        <div className="p-5 rounded-xl border border-slate-800 bg-slate-900/40">
-          <span className="text-xs font-medium text-slate-400">Monitored API Requests</span>
-          <div className="mt-2 text-2xl font-extrabold text-cyan-400 font-mono">
+        <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
+          <span className="text-xs font-medium text-zinc-400">API Requests Tracked</span>
+          <div className="mt-2 text-2xl font-semibold tracking-tight text-zinc-200 font-mono">
             {(unitEcon?.total_requests || 0).toLocaleString()}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">High-throughput search & APIs</p>
+          <p className="text-[11px] text-zinc-400 mt-1">Ingress gateway telemetry stream</p>
         </div>
 
-        <div className="p-5 rounded-xl border border-slate-800 bg-slate-900/40">
-          <span className="text-xs font-medium text-slate-400">Inference Token Volume</span>
-          <div className="mt-2 text-2xl font-extrabold text-violet-400 font-mono">
+        <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
+          <span className="text-xs font-medium text-zinc-400">Inference Token Volume</span>
+          <div className="mt-2 text-2xl font-semibold tracking-tight text-zinc-200 font-mono">
             {((unitEcon?.total_tokens || 0) / 1000000).toFixed(1)}M Tokens
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Bedrock / Azure OpenAI telemetry</p>
+          <p className="text-[11px] text-zinc-400 mt-1">Bedrock & Azure OpenAI combined</p>
         </div>
       </div>
 
-      {/* Unit Cost Drivers Cards */}
+      {/* Unit Cost Drivers */}
       <div>
-        <h2 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
-          <Zap className="h-4 w-4 text-emerald-400" />
+        <h2 className="text-sm font-semibold text-zinc-200 mb-3 flex items-center gap-2">
+          <Zap className="h-4 w-4 text-zinc-400" />
           Unit Cost Drivers ($/kReq & $/MTok)
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {unitEcon?.metrics.map((m, idx) => (
             <div
               key={idx}
-              className="p-5 rounded-xl border border-slate-800 bg-slate-900/40 flex flex-col justify-between"
+              className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] flex flex-col justify-between shadow-sm"
             >
               <div>
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-semibold text-slate-300">{m.feature_name || 'Service Unit'}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-slate-800 font-mono text-slate-400">
+                <div className="flex items-center justify-between text-xs text-zinc-400">
+                  <span className="font-medium text-zinc-200">{m.feature_name || 'Service Unit'}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 font-mono text-zinc-400 border border-zinc-700/50">
                     {m.metric_type}
                   </span>
                 </div>
                 <div className="mt-3">
-                  <span className="text-2xl font-extrabold text-white">
+                  <span className="text-2xl font-semibold tracking-tight text-zinc-100">
                     {m.cost_per_thousand !== undefined
                       ? `$${m.cost_per_thousand.toFixed(4)}`
                       : m.cost_per_million !== undefined
                       ? `$${m.cost_per_million.toFixed(2)}`
                       : `$${m.unit_cost.toFixed(4)}`}
                   </span>
-                  <span className="text-xs text-slate-400 ml-1.5 font-medium">{m.unit_name}</span>
+                  <span className="text-xs text-zinc-400 ml-1.5 font-normal">{m.unit_name}</span>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-mono">
+              <div className="mt-4 pt-3 border-t border-zinc-800/70 flex items-center justify-between text-xs text-zinc-400 font-mono">
                 <span>Total Cost: ${m.total_cost_usd.toFixed(2)}</span>
                 <span>Volume: {m.total_volume.toLocaleString()}</span>
               </div>
@@ -154,26 +154,26 @@ export const UnitEconomicsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Feature Gross Margin Health Matrix Table */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/40 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+      {/* Feature Gross Margin Compliance Matrix */}
+      <div className="rounded-xl border border-zinc-800/80 bg-[#0d0e15] overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b border-zinc-800/80 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-white">Feature Gross Margin Compliance Matrix</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="text-sm font-semibold text-zinc-100">Feature Gross Margin Compliance Matrix</h2>
+            <p className="text-xs text-zinc-400 mt-0.5">
               Scorecard comparing actual COGS profitability against business target margins.
             </p>
           </div>
           <Link
             to="/investigator"
-            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+            className="text-xs font-medium text-zinc-300 hover:text-white flex items-center gap-1 transition"
           >
-            Investigate Underperforming Features <ArrowRight className="h-3.5 w-3.5" />
+            Investigate Underperforming Features <ArrowRight className="h-3.5 w-3.5 text-zinc-400" />
           </Link>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold text-[11px]">
+          <table className="w-full text-left text-xs text-zinc-300">
+            <thead className="bg-[#12141e] border-b border-zinc-800/80 text-zinc-400 uppercase tracking-wider font-medium text-[11px]">
               <tr>
                 <th className="px-4 py-3">Product Feature</th>
                 <th className="px-4 py-3">Tier</th>
@@ -182,33 +182,33 @@ export const UnitEconomicsPage: React.FC = () => {
                 <th className="px-4 py-3 text-right">Gross Profit</th>
                 <th className="px-4 py-3 text-center">Actual Margin</th>
                 <th className="px-4 py-3 text-center">Target</th>
-                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Health Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
+            <tbody className="divide-y divide-zinc-800/50 font-mono">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-zinc-500 font-sans">
                     Fusing ledger and telemetry...
                   </td>
                 </tr>
               ) : (
                 unitEcon?.margins.map((m) => (
-                  <tr key={m.feature_id} className="hover:bg-slate-800/30 transition">
-                    <td className="px-4 py-3 font-sans font-semibold text-white">{m.feature_name}</td>
+                  <tr key={m.feature_id} className="hover:bg-zinc-900/50 transition">
+                    <td className="px-4 py-3 font-sans font-medium text-zinc-200">{m.feature_name}</td>
                     <td className="px-4 py-3 font-sans">
-                      <span className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 capitalize">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 text-zinc-400 capitalize border border-zinc-700/40">
                         {m.tier}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">${m.total_cost_usd.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right text-emerald-400">
+                    <td className="px-4 py-3 text-right text-zinc-300">${m.total_cost_usd.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-right text-emerald-400 font-medium">
                       ${m.total_revenue_usd.toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold">
+                    <td className="px-4 py-3 text-right text-zinc-200">
                       ${m.gross_profit_usd.toFixed(2)}
                     </td>
-                    <td className="px-4 py-3 text-center font-bold">
+                    <td className="px-4 py-3 text-center font-medium">
                       {m.actual_gross_margin_percent !== undefined ? (
                         <span
                           className={
@@ -222,10 +222,10 @@ export const UnitEconomicsPage: React.FC = () => {
                           {m.actual_gross_margin_percent.toFixed(1)}%
                         </span>
                       ) : (
-                        <span className="text-slate-500">N/A</span>
+                        <span className="text-zinc-500">N/A</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center text-slate-400">
+                    <td className="px-4 py-3 text-center text-zinc-400">
                       {m.target_gross_margin_percent.toFixed(1)}%
                     </td>
                     <td className="px-4 py-3 text-center font-sans">{getStatusBadge(m.status)}</td>
