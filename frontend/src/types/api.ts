@@ -96,27 +96,37 @@ export interface CostAttributionSummary {
 }
 
 export interface UnitCostDriver {
+  id?: string;
+  product_feature_id?: string;
   feature_id?: string;
   feature_name?: string;
   metric_type: string;
   unit_name: string;
-  total_cost_usd: number;
-  total_volume: number;
-  unit_cost: number;
+  total_allocated_cost?: number;
+  total_usage_units?: number;
+  total_cost_usd?: number;
+  total_volume?: number;
+  unit_cost?: number;
   cost_per_thousand?: number;
   cost_per_million?: number;
+  scaling_factor?: number;
+  scaled_units?: number;
   status: string;
 }
 
 export interface FeatureGrossMargin {
-  feature_id: string;
+  product_feature_id?: string;
+  feature_id?: string;
   feature_name: string;
   feature_slug: string;
   tier: string;
-  total_cost_usd: number;
-  total_revenue_usd: number;
-  gross_profit_usd: number;
-  target_gross_margin_percent: number;
+  cogs_cost?: number;
+  revenue?: number;
+  gross_profit?: number;
+  total_cost_usd?: number;
+  total_revenue_usd?: number;
+  gross_profit_usd?: number;
+  target_gross_margin_percent?: number;
   actual_gross_margin_percent?: number;
   margin_delta_percent?: number;
   status: 'HEALTHY' | 'WARNING' | 'CRITICAL' | 'NEGATIVE' | 'NO_REVENUE';

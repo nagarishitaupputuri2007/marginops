@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 export const UnitEconomicsPage: React.FC = () => {
-  const { data: unitEcon, isLoading } = useQuery({
+  const { data: unitEcon, isLoading, isError, error } = useQuery({
     queryKey: ['unit-economics-report'],
     queryFn: fetchUnitEconomics,
     refetchInterval: 15000,
@@ -48,6 +48,18 @@ export const UnitEconomicsPage: React.FC = () => {
     }
   };
 
+  if (isError) {
+    return (
+      <div className="p-8 rounded-xl border border-rose-500/30 bg-rose-500/10 text-zinc-200 max-w-xl mx-auto my-12 text-center space-y-3">
+        <AlertTriangle className="h-8 w-8 text-rose-400 mx-auto" />
+        <h2 className="text-base font-semibold text-rose-300">Failed to Load Unit Economics Telemetry</h2>
+        <p className="text-xs text-zinc-400">
+          {(error as Error)?.message || 'Unable to connect to the backend unit economics engine.'}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Executive Header */}
@@ -70,7 +82,7 @@ export const UnitEconomicsPage: React.FC = () => {
           <div>
             <div className="text-zinc-400">Blended Gross Margin</div>
             <div className="text-lg font-semibold tracking-tight text-zinc-100 mt-0.5">
-              {isLoading ? '...' : `${Number(unitEcon?.overall_gross_margin_percent || 0).toFixed(1)}%`}
+              {isLoading ? '...' : `${Number(unitEcon?.overall_gross_margin_percent ?? 0).toFixed(1)}%`}
             </div>
           </div>
           <div className="border-l border-zinc-800 pl-4">
@@ -85,7 +97,7 @@ export const UnitEconomicsPage: React.FC = () => {
         <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
           <span className="text-xs font-medium text-zinc-400">Total Attributed COGS</span>
           <div className="mt-2 text-2xl font-semibold tracking-tight text-zinc-100">
-            ${Number(unitEcon?.total_attributed_cost || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            ${Number(unitEcon?.total_attributed_cost ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <p className="text-[11px] text-zinc-400 mt-1">Hosting, compute & model inference</p>
         </div>
@@ -93,7 +105,7 @@ export const UnitEconomicsPage: React.FC = () => {
         <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
           <span className="text-xs font-medium text-zinc-400">Monitored SaaS Revenue</span>
           <div className="mt-2 text-2xl font-semibold tracking-tight text-emerald-400">
-            ${Number(unitEcon?.total_revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            ${Number(unitEcon?.total_revenue ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <p className="text-[11px] text-zinc-400 mt-1">Recognized customer contract billings</p>
         </div>
@@ -101,7 +113,7 @@ export const UnitEconomicsPage: React.FC = () => {
         <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
           <span className="text-xs font-medium text-zinc-400">API Requests Tracked</span>
           <div className="mt-2 text-2xl font-semibold tracking-tight text-zinc-200 font-mono">
-            {(unitEcon?.total_requests || 0).toLocaleString()}
+            {(unitEcon?.total_requests ?? 0).toLocaleString()}
           </div>
           <p className="text-[11px] text-zinc-400 mt-1">Ingress gateway telemetry stream</p>
         </div>
@@ -109,7 +121,7 @@ export const UnitEconomicsPage: React.FC = () => {
         <div className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] shadow-sm">
           <span className="text-xs font-medium text-zinc-400">Inference Token Volume</span>
           <div className="mt-2 text-2xl font-semibold tracking-tight text-zinc-200 font-mono">
-            {((unitEcon?.total_tokens || 0) / 1000000).toFixed(1)}M Tokens
+            {((unitEcon?.total_tokens ?? 0) / 1000000).toFixed(1)}M Tokens
           </div>
           <p className="text-[11px] text-zinc-400 mt-1">Bedrock & Azure OpenAI combined</p>
         </div>
@@ -122,35 +134,41 @@ export const UnitEconomicsPage: React.FC = () => {
           Unit Cost Drivers ($/kReq & $/MTok)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {unitEcon?.metrics.map((m, idx) => (
-            <div
-              key={idx}
-              className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] flex flex-col justify-between shadow-sm"
-            >
-              <div>
-                <div className="flex items-center justify-between text-xs text-zinc-400">
-                  <span className="font-medium text-zinc-200">{m.feature_name || 'Service Unit'}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 font-mono text-zinc-400 border border-zinc-700/50">
-                    {m.metric_type}
-                  </span>
+          {unitEcon?.metrics?.map((m, idx) => {
+            const costVal = m.cost_per_thousand !== undefined
+              ? `$${Number(m.cost_per_thousand).toFixed(4)}`
+              : m.cost_per_million !== undefined
+              ? `$${Number(m.cost_per_million).toFixed(2)}`
+              : `$${Number(m.unit_cost ?? 0).toFixed(4)}`;
+            const totalCost = Number(m.total_allocated_cost ?? m.total_cost_usd ?? 0);
+            const totalVol = Number(m.total_usage_units ?? m.total_volume ?? 0);
+
+            return (
+              <div
+                key={m.id || idx}
+                className="p-5 rounded-xl border border-zinc-800/80 bg-[#0d0e15] flex flex-col justify-between shadow-sm"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-xs text-zinc-400">
+                    <span className="font-medium text-zinc-200">{m.feature_name || 'Service Unit'}</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 font-mono text-zinc-400 border border-zinc-700/50">
+                      {m.metric_type}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-2xl font-semibold tracking-tight text-zinc-100">
+                      {costVal}
+                    </span>
+                    <span className="text-xs text-zinc-400 ml-1.5 font-normal">{m.unit_name}</span>
+                  </div>
                 </div>
-                <div className="mt-3">
-                  <span className="text-2xl font-semibold tracking-tight text-zinc-100">
-                    {m.cost_per_thousand !== undefined
-                      ? `$${m.cost_per_thousand.toFixed(4)}`
-                      : m.cost_per_million !== undefined
-                      ? `$${m.cost_per_million.toFixed(2)}`
-                      : `$${m.unit_cost.toFixed(4)}`}
-                  </span>
-                  <span className="text-xs text-zinc-400 ml-1.5 font-normal">{m.unit_name}</span>
+                <div className="mt-4 pt-3 border-t border-zinc-800/70 flex items-center justify-between text-xs text-zinc-400 font-mono">
+                  <span>Total Cost: ${totalCost.toFixed(2)}</span>
+                  <span>Volume: {totalVol.toLocaleString()}</span>
                 </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-zinc-800/70 flex items-center justify-between text-xs text-zinc-400 font-mono">
-                <span>Total Cost: ${m.total_cost_usd.toFixed(2)}</span>
-                <span>Volume: {m.total_volume.toLocaleString()}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -192,45 +210,59 @@ export const UnitEconomicsPage: React.FC = () => {
                     Fusing ledger and telemetry...
                   </td>
                 </tr>
+              ) : unitEcon?.margins?.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-zinc-500 font-sans">
+                    No product feature margins calculated yet.
+                  </td>
+                </tr>
               ) : (
-                unitEcon?.margins.map((m) => (
-                  <tr key={m.feature_id} className="hover:bg-zinc-900/50 transition">
-                    <td className="px-4 py-3 font-sans font-medium text-zinc-200">{m.feature_name}</td>
-                    <td className="px-4 py-3 font-sans">
-                      <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 text-zinc-400 capitalize border border-zinc-700/40">
-                        {m.tier}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right text-zinc-300">${m.total_cost_usd.toFixed(2)}</td>
-                    <td className="px-4 py-3 text-right text-emerald-400 font-medium">
-                      ${m.total_revenue_usd.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-zinc-200">
-                      ${m.gross_profit_usd.toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-center font-medium">
-                      {m.actual_gross_margin_percent !== undefined ? (
-                        <span
-                          className={
-                            m.status === 'HEALTHY'
-                              ? 'text-emerald-400'
-                              : m.status === 'WARNING'
-                              ? 'text-amber-400'
-                              : 'text-rose-400'
-                          }
-                        >
-                          {m.actual_gross_margin_percent.toFixed(1)}%
+                unitEcon?.margins?.map((m, idx) => {
+                  const cogs = Number(m.cogs_cost ?? m.total_cost_usd ?? 0);
+                  const rev = Number(m.revenue ?? m.total_revenue_usd ?? 0);
+                  const gp = Number(m.gross_profit ?? m.gross_profit_usd ?? 0);
+                  const targetMargin = Number(m.target_gross_margin_percent ?? 70);
+                  const actualMargin = m.actual_gross_margin_percent !== undefined ? Number(m.actual_gross_margin_percent) : undefined;
+
+                  return (
+                    <tr key={m.product_feature_id || m.feature_id || idx} className="hover:bg-zinc-900/50 transition">
+                      <td className="px-4 py-3 font-sans font-medium text-zinc-200">{m.feature_name}</td>
+                      <td className="px-4 py-3 font-sans">
+                        <span className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 text-zinc-400 capitalize border border-zinc-700/40">
+                          {m.tier}
                         </span>
-                      ) : (
-                        <span className="text-zinc-500">N/A</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center text-zinc-400">
-                      {m.target_gross_margin_percent.toFixed(1)}%
-                    </td>
-                    <td className="px-4 py-3 text-center font-sans">{getStatusBadge(m.status)}</td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-4 py-3 text-right text-zinc-300">${cogs.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right text-emerald-400 font-medium">
+                        ${rev.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-zinc-200">
+                        ${gp.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-center font-medium">
+                        {actualMargin !== undefined ? (
+                          <span
+                            className={
+                              m.status === 'HEALTHY'
+                                ? 'text-emerald-400'
+                                : m.status === 'WARNING'
+                                ? 'text-amber-400'
+                                : 'text-rose-400'
+                            }
+                          >
+                            {actualMargin.toFixed(1)}%
+                          </span>
+                        ) : (
+                          <span className="text-zinc-500">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-center text-zinc-400">
+                        {targetMargin.toFixed(1)}%
+                      </td>
+                      <td className="px-4 py-3 text-center font-sans">{getStatusBadge(m.status)}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
